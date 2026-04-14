@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Task Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Registration Page -->
+    <div class="container">
+        <div class="auth-form">
+            <h2>Create Account</h2>
+            
+            <!-- Message display area (success/error) -->
+            <div id="message" class="message hidden"></div>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required placeholder="Choose a username (3-50 characters)">
+                    <span class="error" id="usernameError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email address">
+                    <span class="error" id="emailError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Create a password (min 6 characters)">
+                    <span class="error" id="passwordError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Re-enter your password">
+                    <span class="error" id="confirmPasswordError"></span>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">Register</button>
+            </form>
+            
+            <p class="auth-link">
+                Already have an account? <a href="login.html">Login here</a>
+            </p>
+            <p class="auth-link">
+                <a href="index.html">Back to Home</a>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Include authentication JavaScript -->
+    <script src="js/auth.js"></script>
+</body>
+</html>

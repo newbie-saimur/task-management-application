@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Task Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Toast Container (for notifications) -->
+    <div id="toastContainer" class="toast-container"></div>
+    
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-title">Task Manager</h1>
+            <div class="nav-user">
+                <span id="welcomeUser">Welcome!</span>
+                <button id="darkModeToggle" class="dark-mode-toggle" title="Toggle Dark Mode">🌙</button>
+                <button id="logoutBtn" class="btn btn-small">Logout</button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- Dashboard Statistics -->
+        <div id="statsGrid" class="stats-grid">
+            <div class="stat-card stat-total animate-fadeInUp">
+                <div class="stat-icon">📊</div>
+                <div class="stat-number" id="statTotal">0</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-card stat-completed animate-fadeInUp">
+                <div class="stat-icon">✅</div>
+                <div class="stat-number" id="statCompleted">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card stat-pending animate-fadeInUp">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-number" id="statPending">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card stat-overdue animate-fadeInUp">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-number" id="statOverdue">0</div>
+                <div class="stat-label">Overdue</div>
+            </div>
+        </div>
+        
+        <!-- Add Task Section -->
+        <div class="add-task-section">
+            <h2>Add New Task</h2>
+            
+            <form id="addTaskForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskTitle">Task Title *</label>
+                        <input type="text" id="taskTitle" name="title" required placeholder="Enter task title" maxlength="200">
+                        <span class="error" id="titleError"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskPriority">Priority</label>
+                        <select id="taskPriority" name="priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskDescription">Description (optional)</label>
+                        <input type="text" id="taskDescription" name="description" placeholder="Enter task description">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskCategory">Category</label>
+                        <select id="taskCategory" name="category_id">
+                            <option value="">No Category</option>
+                            <!-- Categories will be loaded dynamically -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskDueDate">Due Date (optional)</label>
+                        <input type="date" id="taskDueDate" name="due_date">
+                    </div>
+                    
+                    <div class="form-group">
+                        <!-- Empty placeholder for alignment -->
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">➕ Add Task</button>
+            </form>
+        </div>
+        
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h2>My Tasks</h2>
+            
+            <div class="filter-row">
+                <div class="filter-group">
+                    <button class="btn btn-filter active" data-filter="all">All</button>
+                    <button class="btn btn-filter" data-filter="pending">Pending</button>
+                    <button class="btn btn-filter" data-filter="completed">Completed</button>
+                </div>
+                
+                <div class="filter-group">
+                    <select id="categoryFilter" class="btn btn-filter">
+                        <option value="all">All Categories</option>
+                        <!-- Categories loaded dynamically -->
+                    </select>
+                    
+                    <select id="priorityFilter" class="btn btn-filter">
+                        <option value="all">All Priorities</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+            </div>
+            
+            <p class="task-count" id="taskCount">Loading tasks...</p>
+        </div>
+        
+        <!-- Tasks List Container -->
+        <div id="tasksList" class="tasks-list">
+            <div class="spinner" id="loadingSpinner"></div>
+        </div>
+        
+        <!-- Pagination -->
+        <div id="pagination" class="pagination hidden"></div>
+    </div>
+    
+    <!-- Edit Task Modal (hidden by default) -->
+    <div id="editModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Task</h2>
+                <button id="closeModal" class="btn-close">&times;</button>
+            </div>
+            
+            <form id="editTaskForm">
+                <input type="hidden" id="editTaskId">
+                
+                <div class="form-group">
+                    <label for="editTaskTitle">Task Title *</label>
+                    <input type="text" id="editTaskTitle" required maxlength="200">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editTaskDescription">Description</label>
+                    <input type="text" id="editTaskDescription">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTaskPriority">Priority</label>
+                        <select id="editTaskPriority">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editTaskStatus">Status</label>
+                        <select id="editTaskStatus">
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTaskCategory">Category</label>
+                        <select id="editTaskCategory">
+                            <option value="">No Category</option>
+                            <!-- Categories loaded dynamically -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editTaskDueDate">Due Date</label>
+                        <input type="date" id="editTaskDueDate">
+                    </div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" id="cancelEdit" class="btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Include dashboard JavaScript -->
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
