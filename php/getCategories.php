@@ -1,8 +1,7 @@
 <?php
 /**
- * Get Categories API
- * 
- * Returns all categories for the logged-in user
+ * Get Categories API - Lists all categories for authenticated user
+ * Returns: JSON { success, categories[], count }
  */
 
 session_start();

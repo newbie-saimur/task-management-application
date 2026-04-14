@@ -1,9 +1,9 @@
 <?php
 /**
- * Reorder Tasks API (for drag & drop)
- * 
- * Accepts POST request with: task_ids (JSON array of IDs in new order)
- * Updates the position field for each task
+ * Reorder Tasks API - Updates task positions for drag & drop
+ * Accepts (POST JSON): task_ids[] - ordered array of task IDs
+ * Updates: position field in tasks table
+ * Returns: JSON { success, message }
  */
 
 session_start();
@@ -20,8 +20,6 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 }
 
 $user_id = $_SESSION['user_id'];
-
-// Get raw POST data (JSON array)
 $input = file_get_contents('php://input');
 $task_ids = json_decode($input, true);
 
@@ -30,9 +28,6 @@ if (!is_array($task_ids) || empty($task_ids)) {
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
-
-// Update position for each task
 $stmt = $conn->prepare('UPDATE tasks SET position = ? WHERE id = ? AND user_id = ?');
 
 $success = true;

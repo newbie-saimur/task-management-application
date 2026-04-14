@@ -1,13 +1,7 @@
 <?php
 /**
- * Get Dashboard Statistics API
- * 
- * Returns JSON response with:
- *   - Total tasks, completed, pending counts
- *   - Tasks by priority
- *   - Tasks by category
- *   - Overdue tasks count
- * Requires user to be logged in
+ * Dashboard Statistics API - Retrieves task counts and metrics
+ * Returns: JSON { success, stats{}, by_priority{}, by_category[] }
  */
 
 session_start();

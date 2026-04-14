@@ -1,57 +1,42 @@
 <?php
 /**
- * User Registration API
- * 
- * Accepts POST request with: username, email, password
- * Returns JSON response with success/failure message
+ * Registration API - Creates new user account
+ * Accepts: username, email, password
+ * Returns: JSON { success, message }
  */
 
-// Start session to track logged-in users
 session_start();
-
-// Include database connection
 require_once 'db.php';
 
-// Only allow POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     exit;
 }
 
-// Get and sanitize input data
 $username = trim($_POST['username'] ?? '');
 $email    = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
-// --- Input Validation ---
-
-// Check if any field is empty
 if (empty($username) || empty($email) || empty($password)) {
     echo json_encode(['success' => false, 'message' => 'All fields are required']);
     exit;
 }
 
-// Validate username length (3-50 characters)
 if (strlen($username) < 3 || strlen($username) > 50) {
     echo json_encode(['success' => false, 'message' => 'Username must be between 3 and 50 characters']);
     exit;
 }
 
-// Validate email format
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['success' => false, 'message' => 'Invalid email format']);
     exit;
 }
 
-// Validate password length (minimum 6 characters)
 if (strlen($password) < 6) {
     echo json_encode(['success' => false, 'message' => 'Password must be at least 6 characters']);
     exit;
 }
 
-// --- Check if username or email already exists ---
-
-// Use prepared statements to prevent SQL injection
 $stmt = $conn->prepare('SELECT id FROM users WHERE username = ? OR email = ?');
 $stmt->bind_param('ss', $username, $email);
 $stmt->execute();

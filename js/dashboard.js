@@ -1,23 +1,6 @@
-/**
- * Dashboard JavaScript v2.0
- * 
- * Features:
- * - Task CRUD operations (Create, Read, Update, Delete)
- * - Drag & drop reordering
- * - Priority system (low, medium, high, urgent)
- * - Due date tracking with overdue detection
- * - Categories (Study, Personal, Work, etc.)
- * - Dashboard statistics
- * - Dark mode with localStorage persistence
- * - Toast notifications
- * - Pagination with "Load More"
- * - Filter by status, category, and priority
- */
+/** Dashboard Application v2.0 - Task Management UI Layer */
 
-// ==========================================
-// GLOBAL STATE
-// ==========================================
-
+// Application state: tracks filters, pagination, and UI interactions
 const state = {
     currentFilter: 'all',
     currentCategory: 'all',
@@ -28,10 +11,7 @@ const state = {
     draggedTaskId: null
 };
 
-// ==========================================
-// DOM ELEMENTS
-// ==========================================
-
+// DOM element references - cached for performance
 const elements = {
     addTaskForm: document.getElementById('addTaskForm'),
     tasksList: document.getElementById('tasksList'),
@@ -49,46 +29,22 @@ const elements = {
     loadingSpinner: document.getElementById('loadingSpinner'),
     toastContainer: document.getElementById('toastContainer'),
     darkModeToggle: document.getElementById('darkModeToggle'),
-    
-    // Stats elements
     statTotal: document.getElementById('statTotal'),
     statCompleted: document.getElementById('statCompleted'),
     statPending: document.getElementById('statPending'),
     statOverdue: document.getElementById('statOverdue'),
-    
-    // Category select elements
     taskCategory: document.getElementById('taskCategory'),
     editTaskCategory: document.getElementById('editTaskCategory')
 };
 
-// ==========================================
-// INITIALIZATION
-// ==========================================
-
-// Check authentication and initialize dashboard
+// Initialize application
 checkAuth();
-
-// Initialize dark mode from localStorage
 initDarkMode();
 
-// ==========================================
-// EVENT LISTENERS
-// ==========================================
-
-// Add Task Form
-if (elements.addTaskForm) {
-    elements.addTaskForm.addEventListener('submit', addTask);
-}
-
-// Logout Button
-if (elements.logoutBtn) {
-    elements.logoutBtn.addEventListener('click', logout);
-}
-
-// Dark Mode Toggle
-if (elements.darkModeToggle) {
-    elements.darkModeToggle.addEventListener('click', toggleDarkMode);
-}
+// Attach event listeners
+if (elements.addTaskForm) elements.addTaskForm.addEventListener('submit', addTask);
+if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', logout);
+if (elements.darkModeToggle) elements.darkModeToggle.addEventListener('click', toggleDarkMode);
 
 // Status Filter Buttons
 elements.filterButtons.forEach(button => {
@@ -101,7 +57,6 @@ elements.filterButtons.forEach(button => {
     });
 });
 
-// Category Filter
 if (elements.categoryFilter) {
     elements.categoryFilter.addEventListener('change', function() {
         state.currentCategory = this.value;
@@ -109,8 +64,6 @@ if (elements.categoryFilter) {
         loadTasks();
     });
 }
-
-// Priority Filter
 if (elements.priorityFilter) {
     elements.priorityFilter.addEventListener('change', function() {
         state.currentPriority = this.value;
@@ -118,36 +71,22 @@ if (elements.priorityFilter) {
         loadTasks();
     });
 }
-
-// Edit Modal Controls
-if (elements.closeModalBtn) {
-    elements.closeModalBtn.addEventListener('click', closeEditModal);
-}
-
-if (elements.cancelEditBtn) {
-    elements.cancelEditBtn.addEventListener('click', closeEditModal);
-}
-
-// Close modal on overlay click
+if (elements.closeModalBtn) elements.closeModalBtn.addEventListener('click', closeEditModal);
+if (elements.cancelEditBtn) elements.cancelEditBtn.addEventListener('click', closeEditModal);
 if (elements.editModal) {
     elements.editModal.addEventListener('click', function(e) {
-        if (e.target === elements.editModal) {
-            closeEditModal();
-        }
+        if (e.target === elements.editModal) closeEditModal();
     });
 }
+if (elements.editTaskForm) elements.editTaskForm.addEventListener('submit', updateTask);
 
-// Edit Task Form
-if (elements.editTaskForm) {
-    elements.editTaskForm.addEventListener('submit', updateTask);
-}
-
-// ==========================================
-// MAIN FUNCTIONS
-// ==========================================
+/** API Calls & Task Operations */
 
 /**
- * Check if user is authenticated
+ * Verify authentication and initialize dashboard
+ * Checks session validity by attempting to fetch a single task.
+ * If user is not logged in, redirects to login page.
+ * On success, loads stats, categories, and tasks in parallel for performance.
  */
 async function checkAuth() {
     try {
@@ -201,9 +140,8 @@ async function loadStats() {
 }
 
 /**
- * Animate a number counting up
- * @param {HTMLElement} element - Element to update
- * @param {number} target - Target number
+ * Animate number counting from 0 to target value
+ * Used for stat card counters
  */
 function animateNumber(element, target) {
     let current = 0;
@@ -328,14 +266,12 @@ function createTaskCard(task) {
     const createdDate = new Date(task.created_at).toLocaleDateString();
     const isOverdue = task.due_date && task.status === 'pending' && new Date(task.due_date) < new Date(new Date().toDateString());
     
-    // Build due date display
     let dueDateHtml = '';
     if (task.due_date) {
         const dueDate = new Date(task.due_date).toLocaleDateString();
         dueDateHtml = `<span class="due-date-badge ${isOverdue ? 'overdue' : ''}">📅 ${dueDate}${isOverdue ? ' (Overdue)' : ''}</span>`;
     }
     
-    // Build category badge
     let categoryHtml = '';
     if (task.category_name) {
         categoryHtml = `<span class="category-badge" style="background-color: ${task.category_color}">${escapeHtml(task.category_name)}</span>`;
@@ -441,7 +377,9 @@ async function toggleStatus(taskId, currentStatus) {
 }
 
 /**
- * Open edit modal with task data
+ * Fetch and populate task data in modal + display for editing
+ * Parses DOM card data (since full task data not available client-side)
+ * then displays modal with pre-filled form values
  */
 async function openEditModal(taskId) {
     // Find task data from current list
@@ -621,7 +559,10 @@ function initDragAndDrop() {
 }
 
 /**
- * Reorder tasks after drag and drop
+ * Update task positions in database after drag & drop
+ * Maintains order by finding source and target indices, then reordering the array.
+ * Sends updated array to backend which updates 'position' field for each task.
+ * Position field enables proper re-querying on page refresh/reload.
  */
 async function reorderTasks(sourceId, targetId) {
     // Get current task order from DOM
@@ -708,12 +649,11 @@ function updatePagination(data) {
     elements.pagination.appendChild(nextBtn);
 }
 
-// ==========================================
-// DARK MODE
-// ==========================================
+/** Dark Mode Management */
 
 /**
- * Initialize dark mode from localStorage
+ * Initialize dark mode setting from browser storage
+ * Applies 'dark-mode' class to body if enabled
  */
 function initDarkMode() {
     const isDark = localStorage.getItem('darkMode') === 'true';
@@ -740,15 +680,12 @@ function toggleDarkMode() {
     showToast('Theme', isDark ? 'Dark mode enabled' : 'Light mode enabled', 'info');
 }
 
-// ==========================================
-// TOAST NOTIFICATIONS
-// ==========================================
+/** Toast Notifications - User Feedback */
 
 /**
- * Show a toast notification
- * @param {string} title - Toast title
- * @param {string} message - Toast message
- * @param {string} type - 'success', 'error', 'warning', 'info'
+ * Display toast notification with icon and auto-dismiss
+ * Types: success (✅), error (❌), warning (⚠️), info (ℹ️)
+ * Auto-removes after 4 seconds or when close button clicked
  */
 function showToast(title, message, type = 'info') {
     const toast = document.createElement('div');
@@ -796,9 +733,7 @@ function removeToast(toast) {
     }, 300);
 }
 
-// ==========================================
-// HELPER FUNCTIONS
-// ==========================================
+/** Utility Functions */
 
 function showLoading() {
     if (elements.loadingSpinner) {

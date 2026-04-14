@@ -1,14 +1,8 @@
 <?php
 /**
- * Get Tasks API (v2.0)
- * 
- * Accepts GET request with optional query parameters:
- *   - status: all, pending, completed
- *   - category: category_id or all
- *   - priority: low, medium, high, urgent, all
- *   - page: page number (for pagination)
- *   - limit: items per page (default 10)
- * Returns JSON response with tasks for the logged-in user
+ * Get Tasks API - Retrieves paginated task list with filters
+ * Accepts (GET): status, category, priority, page, limit
+ * Returns: JSON { success, tasks[], count, total, pagination_info }
  */
 
 session_start();
@@ -25,18 +19,13 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 }
 
 $user_id = $_SESSION['user_id'];
-
-// Get filter parameters
 $filter_status = isset($_GET['status']) ? $_GET['status'] : 'all';
 $filter_category = isset($_GET['category']) ? $_GET['category'] : 'all';
 $filter_priority = isset($_GET['priority']) ? $_GET['priority'] : 'all';
-
-// Pagination parameters
 $page  = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $limit = isset($_GET['limit']) ? max(1, min(50, intval($_GET['limit']))) : 10;
 $offset = ($page - 1) * $limit;
 
-// --- Build SQL query ---
 $sql = 'SELECT t.id, t.title, t.description, t.priority, t.status, t.due_date, t.position, t.created_at, t.updated_at, c.name as category_name, c.color as category_color 
         FROM tasks t 
         LEFT JOIN categories c ON t.category_id = c.id 

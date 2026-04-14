@@ -1,10 +1,8 @@
 <?php
 /**
- * Add Task API (v2.0)
- * 
- * Accepts POST request with: title, description (optional), priority, category_id (optional), due_date (optional)
- * Returns JSON response with the newly created task data
- * Requires user to be logged in (session check)
+ * Add Task API - Creates new task for authenticated user
+ * Accepts: title*, description, priority, category_id, due_date
+ * Returns: JSON { success, message, task_id }
  */
 
 session_start();
@@ -20,14 +18,12 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit;
 }
 
-// Get and sanitize input data
 $title       = trim($_POST['title'] ?? '');
 $description = trim($_POST['description'] ?? '');
 $priority    = trim($_POST['priority'] ?? 'medium');
 $category_id = !empty($_POST['category_id']) ? intval($_POST['category_id']) : null;
 $due_date    = !empty($_POST['due_date']) ? trim($_POST['due_date']) : null;
 
-// --- Input Validation ---
 if (empty($title)) {
     echo json_encode(['success' => false, 'message' => 'Task title is required']);
     exit;
@@ -38,13 +34,11 @@ if (strlen($title) > 200) {
     exit;
 }
 
-// Validate priority
 $valid_priorities = ['low', 'medium', 'high', 'urgent'];
 if (!in_array($priority, $valid_priorities)) {
     $priority = 'medium';
 }
 
-// Validate due_date format if provided
 if ($due_date && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $due_date)) {
     echo json_encode(['success' => false, 'message' => 'Invalid due date format (use YYYY-MM-DD)']);
     exit;

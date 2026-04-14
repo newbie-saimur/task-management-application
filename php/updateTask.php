@@ -1,11 +1,8 @@
 <?php
 /**
- * Update Task API (v2.0)
- * 
- * Accepts POST request with: task_id, title (optional), description (optional), 
- *                              status (optional), priority (optional), category_id (optional), due_date (optional)
- * Returns JSON response with updated task data
- * Requires user to be logged in (session check)
+ * Update Task API - Modifies existing task properties
+ * Accepts: task_id*, title, description, status, priority, category_id, due_date
+ * Returns: JSON { success, message }
  */
 
 session_start();
@@ -21,7 +18,6 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit;
 }
 
-// Get and sanitize input data
 $task_id     = intval($_POST['task_id'] ?? 0);
 $title       = trim($_POST['title'] ?? '');
 $description = trim($_POST['description'] ?? '');
@@ -37,7 +33,7 @@ if ($task_id <= 0) {
 
 $user_id = $_SESSION['user_id'];
 
-// Verify task belongs to user
+// Verify task ownership
 $stmt = $conn->prepare('SELECT id FROM tasks WHERE id = ? AND user_id = ?');
 $stmt->bind_param('ii', $task_id, $user_id);
 $stmt->execute();
