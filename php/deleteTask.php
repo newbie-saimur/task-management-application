@@ -1,6 +1,6 @@
 <?php
 /**
- * Delete Task API - Soft-deletes task (sets deleted_at timestamp)
+ * Delete Task API - Removes task from database
  * Accepts: task_id
  * Returns: JSON { success, message }
  */
@@ -27,7 +27,7 @@ if ($task_id <= 0) {
 
 $user_id = $_SESSION['user_id'];
 
-// Verify task ownership and not already deleted
+// Verify task ownership
 $stmt = $conn->prepare('SELECT id FROM tasks WHERE id = ? AND user_id = ?');
 $stmt->bind_param('ii', $task_id, $user_id);
 $stmt->execute();
@@ -40,8 +40,8 @@ if ($result->num_rows === 0) {
 }
 $stmt->close();
 
-// Soft delete: set deleted_at timestamp
-$stmt = $conn->prepare('UPDATE tasks SET deleted_at = NOW() WHERE id = ? AND user_id = ?');
+// Delete task
+$stmt = $conn->prepare('DELETE FROM tasks WHERE id = ? AND user_id = ?');
 $stmt->bind_param('ii', $task_id, $user_id);
 
 if ($stmt->execute()) {
